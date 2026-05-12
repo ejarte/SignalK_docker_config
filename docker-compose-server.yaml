@@ -1,0 +1,33 @@
+services:
+  influxdb2:
+    image: influxdb:2
+    ports:
+      - 8086:8086
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB2_SERVER_ADMIN_USERNAME:-influxdb2-admin}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB2_SERVER_ADMIN_PASSWORD:-influxdb2-admin-password}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB2_ADMIN_TOKEN:-influxdb2-admin-token}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB2_INIT_ORG:-boats}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB2_INIT_BUCKET:-boatname}
+    volumes:
+      - ./influxdb2-data:/var/lib/influxdb2
+      - ./influxdb2-config:/etc/influxdb2
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    restart: unless-stopped
+    # if you are running as root then set it to 0
+    # else find the right id with the id -u command
+    user: '0'
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_AUTH_ANONYMOUS_ORG_NAME: Main Org.
+      GF_SERVER_ROOT_URL: ${GRAFANA_SERVER_ROOT_URL:-http://localhost:3001}
+    ports:
+      - '3001:3000'
+    # adding the mount volume point which we create earlier
+    volumes:
+      - ./grafana_data:/var/lib/grafana

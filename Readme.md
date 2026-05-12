@@ -14,6 +14,7 @@ https://manuals.plus/sk-pang/rsp-pican-m-case-metal-case-for-pican-m-manual
 ## Install Pi OS
 - Download the latest Raspberry Pi OS Lite from https://www.raspberrypi.com/software/operating-systems/
 
+Flash the image to a microSD card using Raspberry Pi Imager.
 
 ## Install Docker
 https://docs.docker.com/engine/install/debian/
@@ -33,6 +34,51 @@ https://dash.teams.cloudflare.com/
 # Usage
 - Clone the repository
 
+## Can0
+```bash
+sudo vim /boot/firmware/config.txt
+```
+
+add the following lines to the end of the file:
+```
+enable_uart=1
+dtparam=i2c_arm=on
+dtparam=spi=on
+dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25
+dtoverlay=spi-bcm2835-overlay
+```
+
+```bash
+sudo apt install can-utils -y
+```
+
+```bash
+sudo /sbin/ip link set can0 up type can bitrate 250000
+```
+
+```bash
+vim socketcan-interface.service
+````
+
+```service
+[Unit]
+Description=SocketCAN interface can0 with a baudrate of 250000
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/ip link set can0 type can bitrate 250000 ; /sbin/ifconfig can0 up
+ExecReload=/sbin/ifconfig can0 down ; /sbin/ip link set can0 type can bitrate 250000 ; /sbin/ifconfig can0 up
+ExecStop=/sbin/ifconfig can0 down
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo cp socketcan-interface.service /etc/systemd/system
+sudo chmod 644 /etc/systemd/system/socketcan-interface.service
+sudo systemctl enable socketcan-interface.service
+```
+
 
 ## Copy files
 ```bash
@@ -50,3 +96,13 @@ ssh -L 8086:localhost:8086  pi@sshxthyra.storanassa.se
 
 
 ## Signalk
+
+To configure SignalK, you can use the SignalK UI with help of the following command to access it via SSH tunnel:
+
+```bash
+ssh -L 3000:localhost:3000 pi@xthyra.local
+```
+
+### Signalk add can0
+
+
