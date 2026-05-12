@@ -35,18 +35,39 @@ https://dash.teams.cloudflare.com/
 - Clone the repository
 
 ## Can0
+First do this to activare SPI!
+```
+sudo raspi-config
+Select Interfacing Options -> SPI -> Yes to enable SPI interface
+sudo reboot
+```
+
+
 ```bash
 sudo vim /boot/firmware/config.txt
 ```
 
 add the following lines to the end of the file:
 ```
+[PICAN-M]
 enable_uart=1
 dtparam=i2c_arm=on
 dtparam=spi=on
 dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25
 dtoverlay=spi-bcm2835-overlay
 ```
+
+```
+[2-CH_CAN_HAT+]
+dtparam=spi=on
+dtoverlay=i2c0 
+dtoverlay=spi1-3cs
+dtoverlay=mcp2515,spi1-1,oscillator=16000000,interrupt=22
+dtoverlay=mcp2515,spi1-2,oscillator=16000000,interrupt=13
+
+```
+
+
 
 ```bash
 sudo apt install can-utils -y
