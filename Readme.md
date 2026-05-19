@@ -127,3 +127,31 @@ ssh -L 3000:localhost:3000 pi@xthyra.local
 ### Signalk add can0
 
 
+## AIS-Catcher
+
+[AIS-Catcher](https://github.com/jvde-github/AIS-catcher) receives AIS (Automatic Identification System) signals from nearby vessels using a USB SDR (Software Defined Radio) dongle and forwards them to SignalK.
+
+### Hardware
+- RTL-SDR dongle (e.g. RTL-SDR Blog V3) or compatible SDR receiver
+- AIS antenna (VHF, 161.975 MHz / 162.025 MHz)
+
+### How it works
+The container accesses the USB SDR dongle via `/dev/bus/usb` and decodes AIS messages. Decoded messages are forwarded to SignalK over UDP on port `10110` using the `host.docker.internal` alias (mapped to the host gateway).
+
+### Web UI
+AIS-Catcher exposes a web interface on port `8100` for monitoring received vessels and signal statistics. Access it via SSH tunnel:
+
+```bash
+ssh -L 8100:localhost:8100 pi@xthyra.local
+```
+
+Then open http://localhost:8100 in your browser.
+
+### SignalK integration
+In the docker-compose the `-u host.docker.internal 10110` flag sends decoded NMEA sentences to SignalK's UDP input on port `10110`. Make sure SignalK has a UDP data connection configured on that port:
+
+1. Open the SignalK web UI
+2. Go to **Server → Connections**
+3. Add a new connection: **NMEA 0183 → UDP → port 10110**
+
+
